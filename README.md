@@ -1,58 +1,207 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Laravel Nginx UDS Lab
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Тестовый проект для проверки сборки и запуска Laravel на базе boilerplate [`skufphp/laravel-starter-nginx-uds`](https://github.com/skufphp/laravel-starter-nginx-uds).
 
-## About Laravel
+Репозиторий используется как лабораторный стенд для Laravel-приложения, собранного на связке:
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- PHP-FPM + Nginx через Unix Socket
+- PostgreSQL
+- Redis
+- Node.js / Vite
+- Docker Compose для локальной разработки и production-like запуска
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+Отдельно проект подготовлен так, чтобы его было удобно использовать для деплоя через Dokploy: production-конфигурация уже вынесена в отдельные compose-файлы и ориентирована на контейнерный запуск.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Что здесь проверяется
 
-## Learning Laravel
+- Сборка Laravel-приложения из boilerplate-конфигурации
+- Работа Nginx и PHP-FPM через Unix Socket вместо TCP
+- Dev-режим с примонтированным кодом, Vite и Xdebug
+- Production-сборка с multi-stage Dockerfile
+- Запуск очередей и scheduler в отдельных контейнерах
+- Готовность проекта к деплою через Docker Compose / Dokploy
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## Основа проекта
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+Этот репозиторий основан на boilerplate-проекте:
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+- upstream: [`skufphp/laravel-starter-nginx-uds`](https://github.com/skufphp/laravel-starter-nginx-uds)
 
-## Agentic Development
+Из него взята общая архитектура окружения:
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+- Nginx проксирует запросы в PHP-FPM через Unix Socket
+- PostgreSQL используется как основная БД
+- Redis используется для кеша, сессий и очередей
+- Node-контейнер отвечает за frontend-сборку и Vite HMR
+- Production-сборка выполняется через multi-stage Dockerfile
+
+## Структура
+
+- `docker/` — Dockerfile и конфигурация PHP / Nginx
+- `docker-compose.yml` — окружение для разработки
+- `docker-compose.prod.local.yml` — локальный запуск production-профиля
+- `docker-compose.prod.yml` — production-конфигурация для серверного деплоя
+- `Makefile` — основные команды для разработки и обслуживания
+- `.env.example` — шаблон переменных для dev
+- `.env.production.example` — шаблон переменных для production
+
+## Быстрый старт для разработки
+
+1. Скопируйте переменные окружения:
 
 ```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+cp .env.example .env
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+2. Заполните `.env` реальными значениями.
 
-## Contributing
+Минимально проверьте:
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+- `APP_*`
+- `DB_*`
+- `REDIS_*`
+- `NGINX_PORT`
+- `PGADMIN_*`
+- `XDEBUG_*` при необходимости
 
-## Code of Conduct
+3. Запустите инициализацию проекта:
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+```bash
+make setup
+```
 
-## Security Vulnerabilities
+Команда:
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+- соберет dev-образы
+- поднимет контейнеры
+- дождется готовности PostgreSQL и Redis
+- установит Composer и NPM зависимости
+- сгенерирует `APP_KEY`
+- выполнит миграции
 
-## License
+Если нужна ручная последовательность, используйте:
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+```bash
+make build
+make up
+make install-deps
+make artisan CMD="key:generate"
+make migrate
+```
+
+## Основные команды
+
+### Development
+
+```bash
+make up
+make down
+make restart
+make logs
+make logs-php
+make logs-nginx
+make logs-postgres
+make logs-redis
+make logs-node
+make status
+```
+
+### Laravel / PHP / Node
+
+```bash
+make artisan CMD="migrate"
+make composer-install
+make composer-update
+make npm-install
+make npm-dev
+make npm-build
+make test-php
+make test-coverage
+```
+
+### Shell-доступ
+
+```bash
+make shell-php
+make shell-nginx
+make shell-node
+make shell-postgres
+make shell-redis
+make shell-queue
+make shell-scheduler
+```
+
+## Production-like локальный запуск
+
+Для локальной проверки production-сценария:
+
+1. Скопируйте шаблон:
+
+```bash
+cp .env.production.example .env.production
+```
+
+2. Заполните `.env.production`.
+
+3. Запустите production-профиль:
+
+```bash
+make up-prod
+```
+
+Для остановки:
+
+```bash
+make down-prod
+```
+
+Для просмотра логов:
+
+```bash
+make logs-prod
+```
+
+В production-профиле:
+
+- используется production stage из `docker/php.Dockerfile`
+- Laravel запускается без dev-зависимостей
+- frontend-ассеты собираются на этапе image build
+- миграции выполняются автоматически при старте PHP-контейнера
+- queue worker и scheduler вынесены в отдельные сервисы
+
+## Dokploy
+
+Проект подходит для деплоя через Dokploy как Docker Compose приложение.
+
+Практически это означает:
+
+- в качестве основной production-конфигурации можно использовать `docker-compose.prod.yml`
+- переменные окружения следует задавать через `.env.production` или интерфейс Dokploy
+- Nginx, PHP, PostgreSQL, Redis, queue worker и scheduler уже разделены по сервисам
+- production-образы собираются из этого репозитория без необходимости отдельного Dockerfile для Dokploy
+
+Перед деплоем через Dokploy проверьте:
+
+- заполнены `APP_KEY`, `APP_URL` и production-переменные Laravel
+- корректно настроены `DB_*` и `REDIS_*`
+- выделены persistent volumes для PostgreSQL и Redis
+- внешний роутинг Dokploy направлен на сервис `laravel-nginx-uds`
+
+## Стек
+
+- Laravel 13
+- PHP 8.5 FPM Alpine
+- Nginx
+- PostgreSQL 18.2 Alpine
+- Redis 8.6 Alpine
+- Node.js 24 Alpine
+
+## Примечания
+
+- Dev-окружение использует bind mount проекта и удобно для локальной разработки.
+- Production-конфигурация ориентирована на иммутабельную сборку контейнеров.
+- Связка Nginx и PHP-FPM через Unix Socket повторяет архитектуру upstream boilerplate.
+
+## Источники
+
+- upstream README: <https://github.com/skufphp/laravel-starter-nginx-uds>
