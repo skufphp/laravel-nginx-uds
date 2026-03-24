@@ -78,6 +78,8 @@ make setup
 - установит Composer и NPM зависимости
 - сгенерирует `APP_KEY`
 - выполнит миграции
+- выставит права на `storage/` и `bootstrap/cache`
+- удалит `public/.htaccess` (не используется с Nginx)
 
 Если нужна ручная последовательность, используйте:
 
@@ -97,12 +99,17 @@ make migrate
 make up
 make down
 make restart
+make build
+make rebuild
 make logs
 make logs-php
 make logs-nginx
 make logs-postgres
 make logs-redis
 make logs-node
+make logs-queue
+make logs-scheduler
+make logs-pgadmin
 make status
 ```
 
@@ -110,6 +117,10 @@ make status
 
 ```bash
 make artisan CMD="migrate"
+make migrate
+make rollback
+make fresh
+make tinker
 make composer-install
 make composer-update
 make npm-install
@@ -117,6 +128,17 @@ make npm-dev
 make npm-build
 make test-php
 make test-coverage
+```
+
+### Утилиты и очистка
+
+```bash
+make permissions
+make info
+make validate
+make clean
+make clean-all
+make dev-reset
 ```
 
 ### Shell-доступ
