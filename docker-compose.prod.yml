@@ -84,6 +84,8 @@ services:
       dockerfile: docker/nginx.Dockerfile
       target: production
     image: laravel-nginx-uds:latest
+    expose:
+      - "80"
     pull_policy: never
     container_name: laravel-nginx-uds
     restart: unless-stopped
