@@ -290,7 +290,7 @@
                     <div class="stack-item"><div class="stack-icon red">L</div><span>Laravel 13</span></div>
                     <div class="stack-item"><div class="stack-icon orange">FPM</div><span>PHP-FPM pool</span></div>
                     <div class="stack-item"><div class="stack-icon blue">PHP</div><span>PHP 8.5</span></div>
-                    <div class="stack-item"><div class="stack-icon orange">NGX</div><span>Nginx FastCGI</span></div>
+                    <div class="stack-item"><div class="stack-icon orange">NGINX</div><span>Nginx FastCGI</span></div>
                     <div class="stack-item"><div class="stack-icon green">PG</div><span>PostgreSQL 18</span></div>
                     <div class="stack-item"><div class="stack-icon red">R</div><span>Redis 8.6</span></div>
                 </div>
